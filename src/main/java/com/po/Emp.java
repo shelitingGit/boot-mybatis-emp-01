@@ -39,6 +39,7 @@ public class Emp implements Serializable {
         this.birthday = birthday;
 
         this.depid = depid;
+        System.out.println("ggggggggg");
     }
 
     public Emp(Integer eid, String ename, String sex, String address, Date birthday, Integer depid,
