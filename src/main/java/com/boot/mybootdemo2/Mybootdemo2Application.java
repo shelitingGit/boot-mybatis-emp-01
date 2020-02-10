@@ -8,7 +8,7 @@ import org.springframework.context.annotation.ComponentScan;
 @SpringBootApplication
 /*启动类 主类*/
 @MapperScan(basePackages = {"com.mapper"})
-@ComponentScan(basePackages = {"com.service","com.serviceImpl","com.controller"})
+@ComponentScan(basePackages = {"com.service","com.serviceImpl","com.serviceutil","com.controller"})
 public class Mybootdemo2Application {
 
     public static void main(String[] args) {

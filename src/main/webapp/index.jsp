@@ -7,327 +7,357 @@
 --%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" import="com.po.*,com.service.*,com.serviceImpl.*,com.controller.*,java.util.*"%>
 <html>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <head>
 
-    <title>Title</title>
-    <script type="text/javascript" src="js/jquery-1.9.1.js"></script>
-    <script>
-        /***********初始化下拉列表框*************/
+    <title>管理系统</title>
+    <link rel="stylesheet" type="text/css" href="easyui/themes/default/easyui.css"/>
+    <link rel="stylesheet" type="text/css" href="easyui/themes/icon.css"/>
+    <script type="text/javascript" src="easyui/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="easyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="easyui/locale/easyui-lang-zh_CN.js"></script>
+    <script type="text/javascript">
         $(function(){
-            // $("#form2").attr('style','display:none');
-            //显示列表的方法
-            // alert("hello");
-            $("#btsave").show();
+            $('#win').window('close');  // close a window
             $("#btupdate").hide();
-            showAll();
+            //添加前数据准备
+            $.getJSON("doinit_Emp.do",function(map){
+                var lswf=map.lswf;
+                var lsdep=map.lsdep;
+                //生成复选框
+                for(var i=0;i<lswf.length;i++){
+                    var wf=lswf[i];
+                    $("#wf").append("<input type='checkbox' name='wids' value='"+wf.wid+"'/>"+wf.wname);
+                }
+                //处理下拉列表
+                $('#depid').combobox({
+                    data:lsdep,
+                    valueField:'depid',
+                    textField:'depname',
+                    value:1,
+                    panelHeight:80
+                });
+            });
+
+        });
+        /*******员工列表***********/
+        $(function(){
+            $('#dg').datagrid({
+                url:'findPageAll_Emp.do',
+                singleSelect:true,
+                striped:true,
+                width:'890',
+                pagination:true,
+                pageList:[5,10,15,20],
+                pageSize:5,
+                columns : [ [ {
+                    field : 'eid',
+                    title : '编号',
+                    width : 100,
+                    align:'center'
+
+                }, {
+                    field : 'ename',
+                    title : '姓名',
+                    width : 100,
+                    align:'center'
+                }, {
+                    field : 'sex',
+                    title : '性别',
+                    width : 100,
+                    align:'center'
+                }, {
+                    field : 'address',
+                    title : '地址',
+                    width : 100,
+                    align:'center'
+                }, {
+                    field : 'sdate',
+                    title : '生日',
+                    width : 100,
+                    align:'center'
+                },{
+                    field : 'depname',
+                    title : '部门',
+                    width : 100,
+                    align:'center'
+                }, {
+                    field : 'opt',
+                    title : '操作',
+                    width : 150,
+                    align:'center',
+                    formatter:function(value,row,index){
+                        var bt1='<input type="button" value="删除" onclick="dodelById('+row.eid+')">';
+                        var bt2='<input type="button" value="编辑" onclick="findById('+row.eid+')">';
+                        var bt3='<input type="button" value="详细" onclick="findDetail('+row.eid+')">';
+                        return bt1+'&nbsp;'+bt2+'&nbsp;'+bt3;
+                    }
+                } ] ]
+            });
         });
 
-        /*****************************************/
-        /*************显示列表************************/
-        var page=1;
-        var rows=5;
-        var maxpage=1;
-        function showAll(){
-            //使用Ajax获取后台op=5数据
-            // alert("page="+page+",rows="+rows);
 
-            $.getJSON("findAll.do?page="+page+"&rows="+rows,function(pb){
-                // alert("77");
-                page=pb.page;
-                // alert(pb.page);
-                rows=pb.rows;
-                // alert(pb.rows);
-                maxpage=pb.maxpage;
-                // alert(pb.maxpage);
-                /* alert("page"+page+"rows"+rows+"maxpage"+maxpage);
-                alert(JsonPageBean.pagelist.length); */
-                var tablehead="<table height='400' align='center' border='0'>"
-                    +"<tr align='center' bgcolor=' #FFE4B5'  height='35' >"
-                    +"<td width='80'>编号</td>"
-                    +"<td width='130'>城市</td>"
-                    +"<td width='200'>店铺名</td>"
-                    +"<td width='150'>招牌菜</td>"
-                    +"<td width='260'>地址</td>"
-                    +"<td width='100'>点赞数</td>"
-                    +"<td width='200'></td>"
-                    +"</tr>"
-                var trs="";
-                for(var i=0;i<pb.pagelist.length;i++){
-                    var food=pb.pagelist[i];
-                    trs+="<tr>"
-                        +"<td width='80'>"+food.f_id+"</td>"
-                        +"<td width='130'>"+food.f_city+"</td>"
-                        +"<td width='200'>"+food.f_shopname+"</td>"
-                        +"<td width='150'>"+food.f_special+"</td>"
-                        +"<td width='260'>"+food.f_address+"</td>"
-                        +"<td width='90'>"+food.f_like+"</td>"
-                        +"<td><input type='button' id='btdelete' name='btdelete' value='删除'   onclick='deleteById("+food.f_id+")'><input type='button' id='btedit' name='btedit' value='编辑' onclick='dofindById("+food.f_id+")'></td>"
-                        +"</tr>"
+        /*******员工列表end***********/
+        /*******删除和查找***********/
+        function dodelById(eid){
+            $.messager.confirm('确认','您确认想要删除记录吗？',function(r){
+                if (r){
+                    $.get('delById_Emp.do?eid='+eid,function(code){
+                        if(code=='1'){
+                            $.messager.alert('提示','删除成功');
+                            $('#dg').datagrid('reload');    // 重新载入当前页面数据
+                        }else{
+                            $.messager.alert('提示','删除失败');
+                        }
+                    });
                 }
+            });
 
-                var tableend=tablehead+trs+"</table>";
-                //将值设置到div
-                $("#mytable").html(tableend);
-                //给分页组件赋值
-                $("#rows").val(rows);
-                $("#page").val(page);
-                $("#pagetable").html(page+"/"+maxpage);
+        }
+        function findById(eid){
+            $.getJSON('findById_Emp.do?eid='+eid,function(emp){
+                //删除原来复选框选中的值
+                $(":checkbox[name='wids']").each(function(){
+                    $(this).prop("checked",false);
 
-                //处理分页的按钮--显示和隐藏
-                if(page==1&&maxpage==1){//总一页(全隐藏)
-                    $("#btup").attr('disabled',true);
-                    $("#btfirst").attr('disabled',true);
-                    $("#btnext").attr('disabled',true);
-                    $("#btlast").attr('disabled',true);
-                }
-                if(page==1){//第一页（隐藏前两个）
-                    $("#btup").attr('disabled',true);
-                    $("#btfirst").attr('disabled',true);
-                }
-                if(page==1&&maxpage>1){//第一页（释放后两个）
-                    $("#btnext").attr('disabled',false);
-                    $("#btlast").attr('disabled',false);
-                }
-                if(page>1&&page<maxpage){//中间页（全释放）
-                    $("#btup").attr('disabled',false);
-                    $("#btfirst").attr('disabled',false);
-                    $("#btnext").attr('disabled',false);
-                    $("#btlast").attr('disabled',false);
-                }
-                if(page==maxpage&&page>1){//最后一页（隐藏后两个，释放前两个）
-                    $("#btnext").attr('disabled',true);
-                    $("#btlast").attr('disabled',true);
-                    $("#btup").attr('disabled',false);
-                    $("#btfirst").attr('disabled',false);
-                }
+                });
+                //处理表单
+                $('#ffemp').form('load',{
+                    eid:emp.eid,
+                    ename:emp.ename,
+                    sex:emp.sex,
+                    address:emp.address,
+                    sdate:emp.sdate,
+                    depid:emp.depid,
+                    emoney:emp.emoney
+                });
+
+                //处理福利
+                var wids=emp.wids;
+                //设置选中
+                $(":checkbox[name='wids']").each(function(){
+                    for(var i=0;i<wids.length;i++){
+                        if($(this).val()==wids[i]){
+                            $(this).prop("checked",true);
+                        }
+                    }
+                });
+                $("#btupdate").show();
+                $("#btsave").hide();
             });
         }
-        /*************显示列表end*********************/
-        /*************分页组件*********************/
+        function findDetail(eid){
+            $.getJSON("findDetail_Emp.do?eid="+eid,function(emp){
+                //给员工详细信息中文本设值
+                $("#enametext").html(emp.ename);
+                $("#sextext").html(emp.sex);
+                $("#addresstext").html(emp.address);
+                $("#sdatetext").html(emp.sdate);
+
+                $("#depnametext").html(emp.depname);
+                $("#emoneytext").html(emp.emoney);
+                //获取员工福利
+                var lswf=emp.lswf;
+                var wnames=[];//获取福利名称数组
+                for(var i=0;i<lswf.length;i++){
+                    var wf=lswf[i];
+                    wnames.push(wf.wname);
+                }
+                var strwname=wnames.join(',');
+                $("#wftext").html(strwname);
+                $("#dtmyphoto").attr("src",'uppic/'+emp.photo);
+                $('#win').window('open');  // open a window
+            });
+        }
+        /*******删除和查找end***********/
+        /*******保存和修改***********/
         $(function(){
-            $("#btfirst").click(function(){
-                page=1;
-                showAll();
-            });
-            $("#btup").click(function(){
-                page=page-1;
-                if(page<1){
-                    page=1;
-                }
-                showAll();
-            });
-            $("#btnext").click(function(){
-                page=page+1;
-                if(page>maxpage){
-                    page=maxpage;
-                }
-                showAll();
-            });
-            $("#btlast").click(function(){
-                page=maxpage;
-                showAll();
-            });
-            //更改每页记录数
-            $("#btchaneRows").click(function(){
-                var rowsval=$("#rows").val();
-                if(isNaN(rowsval)){
-                    alert("请输入正确数字");
-                    $("#rows").val(rows);
-                    return;
-                }
-                rows=rowsval;
-                showAll();
-            });
-            //更改页数
-            $("#btchanePage").click(function(){
-                var pageval=$("#page").val();
-                if(isNaN(pageval)){
-                    alert("请输入正确数字");
-                    $("#page").val(page);
-                    return;
-                }
-                page=pageval;
-                showAll();
-            });
-        });
-        /*************分页组件end******************/
-        /**********************保存方法*******************************/
-        $(function(){
+            /*******保存***********/
             $("#btsave").click(function(){
-                //获取表单元素的值
-                var f_city=$("#f_city").val();
-                var f_shopname=$("#f_shopname").val();//获取选中的单选按钮值
-                var f_special=$("#f_special").val();
-                var f_address=$("#f_address").val();
-                //组装为json对象准备传递给服务器save_Student路径对应得方法
-                var food={'f_city':f_city,'f_shopname':f_shopname,'f_special':f_special,'f_address':f_address};
-                //发送json对象到服务器
-                $.post('add_Food.do',food,function(code){
-                    alert("fh"+code)
-                    if(code=='1'){
-                        alert('保存成功！');
-                        showAll();//刷新表格
-                    }else{
-                        alert('保存失败！');
+                $.messager.progress();	// 显示进度条
+                $('#ffemp').form('submit', {
+                    url:'save_Emp.do',
+                    onSubmit: function(){
+                        var isValid = $(this).form('validate');
+                        if (!isValid){
+                            $.messager.progress('close');	// 如果表单是无效的则隐藏进度条
+                        }
+                        return isValid;	// 返回false终止表单提交
+                    },
+                    success: function(code){
+                        if(code=='1'){
+                            $.messager.alert('提示','保存成功');
+                            $('#ffemp').form('reset');
+                            $('#dg').datagrid('reload');    // 重新载入当前页面数据
+                        }else{
+                            $.messager.alert('提示','保存失败');
+                        }
+                        $.messager.progress('close');	// 如果提交成功则隐藏进度条
                     }
                 });
             });
-        });
-        /*************************************************************/
-
-        /**********************更新方法*******************************/
-        $(function(){
+            /*******保存end***********/
+            /*******修改***********/
             $("#btupdate").click(function(){
-                //获取表单元素的值
-                alert("更新");
-
-                var f_id=$("#f_id").val();
-                var f_city=$("#f_city").val();
-                var f_shopname=$("#f_shopname").val();
-                var f_special=$("#f_special").val();
-                var f_address=$("#f_address").val();
-                var f_like=$("#f_like").val();
-                //组装为json对象准备传递给服务器save_Student路径对应得方法
-                var food={'f_city':f_city,'f_shopname':f_shopname,'f_special':f_special,'f_address':f_address,'f_id':f_id,'f_like':f_like};
-                //发送json对象到服务器
-                $.post('update_Food.do',food,function(code){
-                    if(code=='1'){
-                        alert('更新成功！');
-                        showAll();//刷新表格
-                    }else{
-                        alert('更新失败！');
+                $.messager.progress();	// 显示进度条
+                $('#ffemp').form('submit', {
+                    url:'update_Emp.do',
+                    onSubmit: function(){
+                        var isValid = $(this).form('validate');
+                        if (!isValid){
+                            $.messager.progress('close');	// 如果表单是无效的则隐藏进度条
+                        }
+                        return isValid;	// 返回false终止表单提交
+                    },
+                    success: function(code){
+                        if(code=='1'){
+                            $.messager.alert('提示','修改成功');
+                            $('#ffemp').form('reset');
+                            $("#btsave").show();
+                            $("#btupdate").hide();
+                            $('#dg').datagrid('reload');    // 重新载入当前页面数据
+                        }else{
+                            $.messager.alert('提示','修改失败');
+                        }
+                        $.messager.progress('close');	// 如果提交成功则隐藏进度条
                     }
                 });
-
-                $("#btsave").show();
-                $("#btupdate").hide();
+            });
+            /*******修改end***********/
+            //取消
+            $("#btreset").click(function(){
+                $("#ffemp").form('reset');
             });
         });
-        /*************************************************************/
-
-        /********************删除事件************************************/
-        function deleteById(f_id){
-            var flag=window.confirm('是否真的删除！');
-            if(flag){
-                $.get('delById_Food.do?f_id='+f_id,function(code){
-                    if(code=='1'){
-                        alert('删除成功！');
-                        showAll();//刷新表格
-                    }else{
-                        alert('删除失败！');
-                    }
-                });
-            }
-        }
-        /*************************************************************/
-        /***********************查找的方法*****************************/
-        function dofindById(f_id){
-            $.getJSON('findById_Food.do?f_id='+f_id,function(oldfood){
-                //给表单元素赋值
-
-
-                $("#f_id").val(oldfood.f_id);
-                $("#f_city").val(oldfood.f_city);
-                $("#f_shopname").val(oldfood.f_shopname);
-                $("#f_special").val(oldfood.f_special);
-                $("#f_address").val(oldfood.f_address);
-                $("#f_like").val(oldfood.f_like);
-            });
-
-            $("#btsave").hide();
-            $("#btupdate").show();
-        }
-        /************************************************************/
-
-
+        /*******保存和修改end***********/
     </script>
-
-
-
-
-
-
-
 </head>
-
 <body>
-<p align="center">美食信息&nbsp;</p>
+<p align="center">员工列表</p>
 <hr/>
-<div id="mytable"></div>
+<div align="center">
+    <table id="dg"></table>
+</div>
+<p></p>
 
-<!-- 分页 -->
-<form action="" id="form1" name="form1">
-    <table border="0" width="900" height="100" align="center">
+<p>
+<form method="post" enctype="multipart/form-data" name="ffemp" id="ffemp">
+    <table width="600" height="600" border="1" align="center">
+        <tr bgcolor="#FFFFCC" align="center">
+            <td colspan="3" >员工管理</td>
+        </tr>
         <tr align="center">
+            <td>姓名</td>
             <td>
-                <input type="button" name="btfirst" id="btfirst" value="首页">
+                <input type="text" name="ename" id="ename" class="easyui-validatebox" data-options="required:true,missingMessage:'姓名'">
+                <input type="hidden" name="eid" id="eid">
             </td>
+
+        </tr>
+        <tr align="center">
+            <td>性别</td>
             <td>
-                <input type="button" name="btup" id="btup" value="上一页">
-            </td>
-            <td>
-                <input type="button" name="btnext" id="btnext" value="下一页">
-            </td>
-            <td>
-                <input type="button" name="btlast" id="btlast" value="尾页">
-            </td>
-            <td>跳转
-                <input type="text" name="page" size="2" id="page">
-                页
-                <input type="button" name="btchanePage" id="btchanePage" value="确定">
-            </td>
-            <td>每页
-                <input type="text" name="rows" size="2"  id="rows">
-                记录
-                <input type="button" name="btchaneRows" id="btchaneRows" value="确定">
-            </td>
-            <td>
-                <div id="pagetable"></div>
+                <input type="radio" name="sex" id="sex" value="男" checked="checked">男
+                <input type="radio" name="sex" id="sex1" value="女">女
             </td>
         </tr>
-    </table>
-</form>
-<hr/>
-<form form id="form2" name="form2" method="post" action="">
-    <table border="0" width="600" height="400" align="center">
-        <tr align="center" bgcolor=" #96FED1">
-            <td colspan="2">美食信息管理</td>
-        </tr>
-        <tr>
-            <td>城市</td>
+        <tr align="center">
+            <td>住址</td>
             <td>
-                <input type="text" name="f_city" id="f_city">
+                <input type="text" name="address" id="address" class="easyui-validatebox" data-options="required:true,missingMessage:'住址'">
             </td>
         </tr>
-        <tr>
-            <td>店铺名</td>
+        <tr align="center">
+            <td>生日</td>
             <td>
-                <input type="text" name="f_shopname" id="f_shopname">
+                <input type="date" name="sdate" id="sdate" value="1990-01-01">
             </td>
         </tr>
-        <tr>
-            <td>招牌菜</td>
+
+        <tr align="center">
+            <td>部门</td>
             <td>
-                <input type="text" name="f_special" id="f_special">
+                <input id="depid" name="depid">
             </td>
         </tr>
-        <tr>
-            <td>地址</td>
+        <tr align="center">
+            <td>薪资</td>
             <td>
-                <input type="text" name="f_address" id="f_address">
+                <input type="text" name="emoney" id="emoney" class="easyui-validatebox" data-options="required:true,missingMessage:'薪资'">
             </td>
         </tr>
-        <tr align="center" bgcolor=" #96FED1">
+        <tr align="center">
+            <td >福利</td>
             <td colspan="2">
-                <!--  <input type="hidden" id="op" name="op" value="1" > -->
-                <input type="button" name="btsave" id="btsave" value="保存" />
-                <input type="button" name="btupdate" id="btupdate" value="更新" />
-                <input type="reset" name="btreset" id="btreset" value="重置" />
-                <input type="hidden" id="f_like" name="f_like" >
-                <input type="hidden" id="f_id" name="f_id"  >
+                <span id="wf"></span>
+            </td>
+        </tr>
+        <tr bgcolor="#FFFFCC" align="center">
+            <td colspan="3" >
+                <input type="button" name="btsave" id="btsave" value="保存">
+                <input type="button" name="btupdate" id="btupdate" value="修改">
+                <input type="button" name="btreset" id="btreset" value="取消">
+            </td>
+
+        </tr>
+
+    </table>
+</form>
+</p>
+<!-- 提示窗口,由于显示详细信息 -->
+<div id="win" class="easyui-window" title="员工详细信息" style="width:620px;height:650px"
+     data-options="iconCls:'icon-save',modal:true">
+    <table width="600" height="600" border="1" align="center">
+        <tr bgcolor="#FFFFCC" align="center">
+            <td colspan="3" >信息展示</td>
+        </tr>
+        <tr align="center">
+            <td width="50">姓名</td>
+            <td>
+                <span id="enametext"></span>
+            </td>
+
+        </tr>
+        <tr align="center">
+            <td>性别</td>
+            <td>
+                <span id="sextext"></span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td>住址</td>
+            <td>
+                <span id="addresstext"></span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td>生日</td>
+            <td>
+                <span id="sdatetext"></span>
+            </td>
+        </tr>
+
+        <tr align="center">
+            <td>部门</td>
+            <td>
+                <span id="depnametext"></span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td>薪资</td>
+            <td>
+                <span id="emoneytext"></span>
+            </td>
+        </tr>
+        <tr align="center">
+            <td >福利</td>
+            <td colspan="2">
+                <span id="wftext"></span>
             </td>
         </tr>
     </table>
-</form>
+</div>
 </body>
 </html>

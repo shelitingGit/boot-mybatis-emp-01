@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- com.mapper.StudentMapper为接口类 -->
+<mapper namespace="com.mapper.IEmpWelfareMapper">
+    <insert id="save" parameterType="com.po.EmpWelfare">
+insert into empwelfare(eid,wid) values(#{eid},#{wid})
+</insert>
+    <delete id="delByEid" parameterType="Integer">
+delete from empwelfare where eid=#{eid}
+</delete>
+    <select id="findByEid" parameterType="Integer" resultType="com.po.Welfare">
+select w.* from empwelfare ew, welfare w where ew.wid=w.wid and ew.eid=#{eid}
+</select>
+</mapper>

@@ -1,39 +1,39 @@
 package com.po;
 
+import java.io.Serializable;
 import java.util.List;
 
-public class PageBean {//分页实体类
-    private int page=1;//当前页
-    private int rows=5;//每页记录数
-    private int maxpage;//最大页
-    private List<?> pagelist;//结果集
+public class PageBean implements Serializable {
+    private Integer page=1;
+    private Integer rows=5;
+    private Integer maxpage;
+    private List<?> pagelist;
     public PageBean() {
         super();
-        // TODO Auto-generated constructor stub
     }
-    public PageBean(int page, int rows, int maxpage, List<?> pagelist) {
+    public PageBean(Integer page, Integer rows, Integer maxpage, List<?> pagelist) {
         super();
         this.page = page;
         this.rows = rows;
         this.maxpage = maxpage;
         this.pagelist = pagelist;
     }
-    public int getPage() {
+    public Integer getPage() {
         return page;
     }
-    public void setPage(int page) {
+    public void setPage(Integer page) {
         this.page = page;
     }
-    public int getRows() {
+    public Integer getRows() {
         return rows;
     }
-    public void setRows(int rows) {
+    public void setRows(Integer rows) {
         this.rows = rows;
     }
-    public int getMaxpage() {
+    public Integer getMaxpage() {
         return maxpage;
     }
-    public void setMaxpage(int maxpage) {
+    public void setMaxpage(Integer maxpage) {
         this.maxpage = maxpage;
     }
     public List<?> getPagelist() {
@@ -43,14 +43,4 @@ public class PageBean {//分页实体类
         this.pagelist = pagelist;
     }
 
-    @Override
-    public String toString() {
-        return "PageBean{" +
-                "page=" + page +
-                ", rows=" + rows +
-                ", maxpage=" + maxpage +
-                ", pagelist=" + pagelist +
-                '}';
-    }
 }
-

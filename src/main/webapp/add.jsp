@@ -1,5 +1,5 @@
-<%@ page import="com.service.IFoodService" %>
-<%@ page import="com.serviceImpl.FoodServiceImpl" %><%--
+<%@ page import="com.service.IDepService" %>
+<%@ page import="com.serviceImpl.DepServiceImpl" %><%--
   Created by IntelliJ IDEA.
   User: sheli
   Date: 2020/2/8
@@ -11,7 +11,7 @@
 <head>
     <title>Title</title>
     <%
-        IFoodService fbiz=new FoodServiceImpl();
+        IDepService fbiz=new DepServiceImpl();
     %>
 
 </head>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- com.mapper.StudentMapper为接口类 -->
+<mapper namespace="com.mapper.ISalaryMapper">
+    <insert id="save" parameterType="com.po.Salary">
+insert into salary(eid,emoney) values(#{eid},#{emoney})
+</insert>
+    <update id="updateByEid" parameterType="com.po.Salary">
+update salary set emoney=#{emoney} where eid=#{eid}
+</update>
+    <delete id="delByEid">
+delete from salary where eid=#{eid}
+</delete>
+    <select id="findSalaryByEid" resultType="com.po.Salary">
+select * from salary where eid=#{eid}
+</select>
+</mapper>
