@@ -1,6 +1,5 @@
 package com.controller;
 
-import com.po.Dep;
 import com.po.Emp;
 
 import javax.servlet.http.HttpServletRequest;
